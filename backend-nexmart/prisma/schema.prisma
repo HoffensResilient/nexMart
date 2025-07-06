@@ -1,0 +1,50 @@
+// schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       Int     @id @default(autoincrement())
+  email    String  @unique
+  password String
+  role     Role    @default(USER)
+  orders   Order[]
+}
+
+model Product {
+  id       Int      @id @default(autoincrement())
+  title    String
+  slug     String   @unique
+  price    Float
+  image    String
+  category String
+  orders   OrderProduct[]
+}
+
+model Order {
+  id        Int            @id @default(autoincrement())
+  userId    Int
+  user      User           @relation(fields: [userId], references: [id])
+  products  OrderProduct[]
+  createdAt DateTime       @default(now())
+}
+
+model OrderProduct {
+  order     Order   @relation(fields: [orderId], references: [id])
+  orderId   Int
+  product   Product @relation(fields: [productId], references: [id])
+  productId Int
+
+  @@id([orderId, productId]) // Composite PK for join table
+}
+
+enum Role {
+  USER
+  ADMIN
+}
